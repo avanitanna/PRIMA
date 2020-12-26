@@ -3,7 +3,8 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from psychopy import gui, visual, core, event
-from Task import Task
+from pylink import getEYELINK
+#from Task import Task
 from User import User
 import json_lines
 import os
@@ -44,9 +45,10 @@ def print_hi(name):
     # Create or open subject file
     subject = User(participantID, conditionID, trials)
     # Create the task class
-    task = Task(subject, data)
+    #task = Task(subject, data)
     # Run the task
-    task.run_trials()
+    #task.run_trials()
+
 
 
 # Press the green button in the gutter to run the script.

@@ -29,7 +29,7 @@ CROSS_SIZE = 45 # pixels
 
 # General
 stimuli_dimensions = (1024, 800) #in pixels for a single slice of the 3D volume (columns, rows) or (x,y) instead of (rows, columns)
-MONITOR_RESOLUTION = (1920, 1080)
+MONITOR_RESOLUTION = (1280, 1024)
 fixation_duration = 2 #in seconds
 num_trials_per_condition = 100
 EVENT_PROCEED_KEY = 'space'

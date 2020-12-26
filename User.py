@@ -10,7 +10,8 @@ class User:
                          'Data': {'TotalTrials': TotalTrials,
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
-                                  'TaskMessages': []},
+                                  'TaskMessages': [],
+                                  'EyeTrackDataPath': None},
                          }
         self.userDataPath = None
         self.dataExists = False
