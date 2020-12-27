@@ -4,6 +4,7 @@ import taskUtils
 import constants
 from pyedfread import edf
 from eyetrackerFuncs import Tracker_EyeLink
+import tempfile
 
 
 class Task:
@@ -22,6 +23,7 @@ class Task:
                                           calibrationType='HV9',
                                           screen=constants.MONITOR_RESOLUTION,
                                           dummy=False)
+        self.eyeTrackerData = {}
 
     def task_message(self, message):
         self.subject.append_data_field((message, self.clock.getTime()), "TaskMessages")
@@ -40,17 +42,21 @@ class Task:
 
     def save_subject_data(self):
         self.subject.update_data_field(self.trial, 'TrialsCompleted')
-        self.retrieve_edf_file()
-        with open(os.path.join(self.dataExportFileName, f'trial {self.tn} result.json'), 'w') as fp:
-            json.dump(self.data, fp)
+        self.get_eyeTracker_data()
+        self.subject.update_data_field(self.eyeTrackerData, 'EyeTrackerData')
 
     def quit_experiment(self):
+        if self.eyeTracker.getStatus() == "RECORDING":
+            self.eyeTracker.stopEyeTracking()
+        if self.eyeTracker.getStatus() != "OFFLINE":
+            self.eyeTracker.closeConnectionToEyeTracker()
+
         self.task_message("Observer force quit the experiment on trial %d" % self.trial)
         self.window.close()
         core.quit()
         event.clearEvents()
 
-    def retrieve_edf_file(self):
+    def get_eyeTracker_data(self):
         self.eyeTracker.retrieveDataFile(tempfile.gettempdir() + '/trial.edf')
 
         samples, events, messages = edf.pread(tempfile.gettempdir() + '/trial.edf',
@@ -77,9 +83,9 @@ class Task:
                 start_saccade = [row['gstx'], row['gsty'], row['end']]
                 all_saccades.append([[row['gstx'], row['gsty'], row['start']],
                                      [row['genx'], row['geny'], row['end']]])
-        self.data['saccades'] = saccades
-        self.data['all_saccades'] = all_saccades
-        self.data['all_fixations'] = all_fixations
+        self.eyeTrackerData['Saccades'] = saccades
+        self.eyeTrackerData['AllSaccades'] = all_saccades
+        self.eyeTrackerData['AllFixations'] = all_fixations
 
     def run_trials(self):
         n = self.trial

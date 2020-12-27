@@ -11,7 +11,9 @@ class User:
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
                                   'TaskMessages': [],
-                                  'EyeTrackDataPath': None},
+                                  'EyeTrackData': {'Saccades': [],
+                                                   'AllSaccades': [],
+                                                   'AllFixations': []}},
                          }
         self.userDataPath = None
         self.dataExists = False
