@@ -33,7 +33,7 @@ def get_participant_info():
 def data_setup():
     imgsPath = []
     items = []
-    with open('JSONS/Imgs_for_eyeTrackingExp1.jsonl', 'rb') as f:  # opening file in binary(rb) mode
+    with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb) mode
         for item in json_lines.reader(f):
             imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
             items.append(item)
