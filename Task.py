@@ -12,9 +12,10 @@ class Task:
         self.subject = subject
         self.data = data
         self.clock = core.Clock()
-        self.trial = self.subject.get_trial_number()
-        self.trialOrder = self.subject.get_trial_order()
-        self.condition = self.subject.get_condition()
+        self.trial = self.subject.get("TrialsCompleted")
+        self.trialOrder = self.subject.get("TrialOrder")
+        self.condition = self.subject.get("ConditionID")
+        self.eyeTracked = self.subject.get("EyeTracked")
         self.window = visual.Window(constants.MONITOR_RESOLUTION, monitor="testMonitor", units="pix")
         self.eyeTracker = Tracker_EyeLink(win=self.window,
                                           clock=self.clock,
@@ -41,9 +42,9 @@ class Task:
         event.clearEvents()
 
     def save_subject_data(self):
-        self.subject.update_data_field(self.trial, 'TrialsCompleted')
+        self.subject.update(self.trial, 'TrialsCompleted')
         self.get_eyeTracker_data()
-        self.subject.update_data_field(self.eyeTrackerData, 'EyeTrackerData')
+        self.subject.append(self.eyeTrackerData, 'EyeTrackerData')
 
     def quit_experiment(self):
         if self.eyeTracker.getStatus() == "RECORDING":

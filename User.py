@@ -1,17 +1,20 @@
 import os
 import json
 import numpy as np
+import constants
+from collections.abc import Mapping
 
 
 class User:
-    def __init__(self, participantID, conditionID, TotalTrials=None):
+    def __init__(self, participantID, conditionID, eyeTracked=constants.EYE_TRACKED['right'], TotalTrials=None):
         self.userInfo = {'ParticipantID': participantID,
                          'ConditionID': conditionID,
                          'Data': {'TotalTrials': TotalTrials,
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
                                   'TaskMessages': [],
-                                  'EyeTrackData': {'Saccades': [],
+                                  'EyeTrackData': {'EyeTracked': eyeTracked,
+                                                   'Saccades': [],
                                                    'AllSaccades': [],
                                                    'AllFixations': []}},
                          }
@@ -48,19 +51,43 @@ class User:
         with open(self.userDataPath, 'w') as filePath:
             json.dump(self.userInfo['Data'], filePath)
 
-    def update_data_field(self, data, fieldName):
-        self.userInfo['Data'][fieldName] = data
+    def get(self, field):
+        data = self.data_recursion(field, action=constants.GET)
+        if data:
+            return data
+
+        print("The given field does not exist")
+
+    def update(self, field, value):
+        self.userInfo["Data"] = self.data_recursion(field, action=constants.UPDATE, value=value)
         self.save_data()
 
-    def append_data_field(self, data, fieldName):
-        self.userInfo['Data'][fieldName].append(data)
+    def append(self, field, value):
+        self.userInfo["Data"] = self.data_recursion(field, action=constants.APPEND, value=value)
         self.save_data()
 
-    def get_trial_number(self):
-        return self.userInfo['Data']['TrialsCompleted']
+    def data_recursion(self, field, action, value=None, data=None):
+        if data is None:
+            data = self.userInfo['Data']
+        for key in data:
+            if isinstance(data[key], Mapping):
+                if action == constants.GET:
+                    self.data_recursion(field, action, data=data[key])
+                else:
+                    data[key] = self.data_recursion(field, action, value=value, data=data[key])
+            elif key == field:
+                if action == constants.GET:
+                    return data[key]
+                elif action == constants.UPDATE:
+                    data[key] = value
+                elif action == constants.APPEND:
+                    if not isinstance(data[key], Mapping):
+                        data[key].append(value)
+                    else:
+                        for item in value:
+                            data[key][item].append(value[item])
 
-    def get_trial_order(self):
-        return self.userInfo['Data']['TrialOrder']
-
-    def get_condition(self):
-        return self.userInfo['ConditionID']
+        if action is not constants.GET:
+            return data
+        else:
+            return False

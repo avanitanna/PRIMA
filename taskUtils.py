@@ -24,10 +24,14 @@ def draw_fixation(window, position=None):
     while wait:
         keys = event.getKeys()
         quitExperiment = check_force_exit(keys)
-        if quitExperiment:
-            return quitExperiment
+
         if constants.EVENT_PROCEED_KEY in keys:
             wait = False
+        elif quitExperiment:
+            return quitExperiment
+        elif 'c' in event.getKeys():
+            recalibrate = True
+            return recalibrate
     return False
 
 

@@ -8,6 +8,7 @@ from Task import Task
 from User import User
 import json_lines
 import os
+import constants
 import numpy as np
 
 
@@ -17,8 +18,10 @@ def get_participant_info():
     myDlg.addField('Name:')
     myDlg.addText('Experiment Info')
     myDlg.addField('Condition:', choices=["Study1",
-                                          "Study2"]
-                   )
+                                          "Study2"])
+    myDlg.addField('Eye Tracked:', choices=["Right",
+                                            "Left"])
+
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     if myDlg.OK:  # or if ok_data is not None
         print(ok_data)
@@ -38,12 +41,12 @@ def data_setup():
 
 
 def print_hi(name):
-    participantID, conditionID = get_participant_info()  # opens up GUI to collect User input
+    participantID, conditionID, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
     data = data_setup()
     trials = len(data['ImagePaths'])
     # Create or open subject file
-    subject = User(participantID, conditionID, trials)
+    subject = User(participantID, conditionID, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
     task = Task(subject, data)
     # Run the task
