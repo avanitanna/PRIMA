@@ -2,14 +2,12 @@
 
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-from psychopy import gui, visual, core, event
-from pylink import getEYELINK
+from psychopy import gui
 from Task import Task
 from User import User
 import json_lines
 import os
 import constants
-import numpy as np
 
 
 def get_participant_info():
@@ -40,7 +38,7 @@ def data_setup():
     return {'CompleteData': items, 'ImagePaths': imgsPath}
 
 
-def print_hi(name):
+def print_hi():
     participantID, conditionID, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
     data = data_setup()
@@ -55,6 +53,6 @@ def print_hi(name):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    print_hi()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

@@ -5,30 +5,35 @@ import constants
 from pyedfread import edf
 from eyetrackerFuncs import Tracker_EyeLink
 import tempfile
+import os
 
 
 class Task:
-    def __init__(self, subject, data):
+    def __init__(self, subject, data, trackEye=True):
         self.subject = subject
         self.data = data
         self.clock = core.Clock()
         self.trial = self.subject.get("TrialsCompleted")
+        print("hi")
         self.trialOrder = self.subject.get("TrialOrder")
         self.condition = self.subject.get("ConditionID")
         self.eyeTracked = self.subject.get("EyeTracked")
         self.window = visual.Window(constants.MONITOR_RESOLUTION, monitor="testMonitor", units="pix")
-        self.eyeTracker = Tracker_EyeLink(win=self.window,
-                                          clock=self.clock,
-                                          sj=subject.userInfo['ParticipantID'],
-                                          saccadeSensitivity="HIGH",
-                                          calibrationType='HV9',
-                                          screen=constants.MONITOR_RESOLUTION,
-                                          dummy=False)
-        self.eyeTrackerData = {}
+        self.trackEye = trackEye
+        if self.trackEye:
+            self.eyeTracker = Tracker_EyeLink(win=self.window,
+                                              clock=self.clock,
+                                              sj=subject.userInfo['ParticipantID'],
+                                              saccadeSensitivity="HIGH",
+                                              calibrationType='HV9',
+                                              screen=constants.MONITOR_RESOLUTION,
+                                              dummy=False)
+
+            self.eyeTrackerData = {}
 
     def task_message(self, message):
-        self.subject.append_data_field((message, self.clock.getTime()), "TaskMessages")
-        if self.eyeTracker.getStatus() == "RECORDING":
+        self.subject.append("TaskMessages", (message, self.clock.getTime()))
+        if self.trackEye and self.eyeTracker.getStatus() == "RECORDING":
             self.eyeTracker.sendMessage(message)
 
     def load_stimulus(self):
@@ -42,15 +47,17 @@ class Task:
         event.clearEvents()
 
     def save_subject_data(self):
-        self.subject.update(self.trial, 'TrialsCompleted')
-        self.get_eyeTracker_data()
-        self.subject.append(self.eyeTrackerData, 'EyeTrackerData')
+        self.subject.update('TrialsCompleted', self.trial)
+        if self.trackEye:
+            self.get_eyeTracker_data()
+            self.subject.append('EyeTrackerData', self.eyeTrackerData)
 
     def quit_experiment(self):
-        if self.eyeTracker.getStatus() == "RECORDING":
-            self.eyeTracker.stopEyeTracking()
-        if self.eyeTracker.getStatus() != "OFFLINE":
-            self.eyeTracker.closeConnectionToEyeTracker()
+        if self.trackEye:
+            if self.eyeTracker.getStatus() == "RECORDING":
+                self.eyeTracker.stopEyeTracking()
+            if self.eyeTracker.getStatus() != "OFFLINE":
+                self.eyeTracker.closeConnectionToEyeTracker()
 
         self.task_message("Observer force quit the experiment on trial %d" % self.trial)
         self.window.close()
@@ -98,15 +105,18 @@ class Task:
                 self.quit_experiment()
                 break
 
-            if self.eyeTracker.getStatus() != "RECORDING":
-                self.eyeTracker.startEyeTracking(self.trial, calibTrial=False)
-            self.eyeTracker.resetEventQue()
+            if self.trackEye:
+                if self.eyeTracker.getStatus() != "RECORDING":
+                    self.eyeTracker.startEyeTracking(self.trial, calibTrial=False)
+                self.eyeTracker.resetEventQue()
+
             self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
 
             self.load_stimulus()
 
             self.task_message("STIMULUS PRESENTATION ROUTINE ended.")
-            self.eyeTracker.stopEyeTracking()
+            if self.trackEye:
+                self.eyeTracker.stopEyeTracking()
 
             self.trial += 1
             self.save_subject_data()

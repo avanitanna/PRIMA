@@ -29,7 +29,7 @@ def draw_fixation(window, position=None):
             wait = False
         elif quitExperiment:
             return quitExperiment
-        elif 'c' in event.getKeys():
+        elif constants.RECALIBRATE_KEY in event.getKeys():
             recalibrate = True
             return recalibrate
     return False

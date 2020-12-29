@@ -1,5 +1,3 @@
-import os
-
 # Colors for psychopy experiment
 COLOR_RED = [229, 72, 35]
 COLOR_GRAY = [57, 48, 42]
@@ -11,8 +9,8 @@ RATING_GREEN = [50, 255, 50]
 RATING_RED = [255, 50, 50]
 
 # code for eyelink
-EYE_TRACKED = {"right": 0,
-               "left": 1}
+EYE_TRACKED = {"Right": 0,
+               "Left": 1}
 
 STARTSACC = 5
 ENDSACC = 6
