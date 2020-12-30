@@ -6,17 +6,15 @@ from collections.abc import Mapping
 
 
 class User:
-    def __init__(self, participantID, conditionID, eyeTracked=constants.EYE_TRACKED['Right'], TotalTrials=None):
+    def __init__(self, participantID, conditionID, eyeTracked=None, TotalTrials=None):
         self.userInfo = {'ParticipantID': participantID,
                          'ConditionID': conditionID,
+                         'EyeTracked': eyeTracked,
                          'Data': {'TotalTrials': TotalTrials,
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
                                   'TaskMessages': [],
-                                  'EyeTrackData': {'EyeTracked': eyeTracked,
-                                                   'Saccades': [],
-                                                   'AllSaccades': [],
-                                                   'AllFixations': []}},
+                                  'EyeTrackData': []},
                          }
         self.userDataPath = None
         self.dataExists = False
@@ -47,7 +45,6 @@ class User:
                       "initiating User class")
 
     def save_data(self):
-        print(self.userDataPath)
         with open(self.userDataPath, 'w') as filePath:
             json.dump(self.userInfo, filePath)
 
@@ -69,12 +66,16 @@ class User:
     def data_recursion(self, field, action, value=None, data=None):
         if data is None:
             data = self.userInfo
+        print("ho")
+        print(data)
+        print("hi")
         for key in data:
             if isinstance(data[key], Mapping):
                 if action == constants.GET:
                     data = self.data_recursion(field, action, data=data[key])
                 else:
                     data[key] = self.data_recursion(field, action, value=value, data=data[key])
+
             elif key == field:
                 if action == constants.GET:
                     return data[key]
@@ -82,8 +83,13 @@ class User:
                     data[key] = value
                 elif action == constants.APPEND:
                     if not isinstance(data[key], Mapping):
+                        print(data[key])
+                        print(value)
                         data[key].append(value)
+                        print(data[key])
+
                     else:
+                        print("awerfwefawefawefawefawefwaef")
                         for item in value:
                             data[key][item].append(value[item])
 
