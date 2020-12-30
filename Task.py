@@ -131,15 +131,16 @@ class Task:
                     self.action[keys[-1]]()
 
             eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
-            print(eye_data)
+            #print(eye_data)
             if eye_data != (-1, -1):
-                eyePosition = (eye_data[0] - constants.MONITOR_RESOLUTION[1] / 2,
-                               -eye_data[1] + constants.MONITOR_RESOLUTION[0] / 2)
+                eyePosition = (eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2,
+                               -eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2)
                 # switch to psychopy window coordinates (0,0) middle of screen
 
                 gazeOkayRegion = visual.Circle(self.window, radius=constants.CROSS_SIZE / 2,
                                                units="pix", pos=[0, -300], lineWidth=2,
                                                lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
+
                 fixating = gazeOkayRegion.contains(*eyePosition)
 
                 if fixating:
@@ -151,7 +152,10 @@ class Task:
                         fixationDone = True
                 else:
                     fixationStarted = False
+
+
                 taskUtils.draw_gaze(self.window, eyePosition)
+
                 print(eyePosition)
             taskUtils.guide_text(self.window, self.trial, self.condition)
             taskUtils.draw_fixation(self.window, [0, -300])
@@ -162,16 +166,17 @@ class Task:
         for _ in self.trialOrder[n:]:
             self.task_message("Fixation loaded.")
             taskUtils.guide_text(self.window, self.trial, self.condition)
-            taskUtils.draw_fixation(self.window, [0, -300])
-            #self.forceFixateRoutine()
-            self.window.flip()
-            self.action[taskUtils.wait_for_user_input()]()
+            #taskUtils.draw_fixation(self.window, [0, -300])
+
+
+            #self.action[taskUtils.wait_for_user_input()]()
 
             if self.trackEye:
                 if self.eyeTracker.getStatus() != "RECORDING":
                     self.eyeTracker.startEyeTracking(self.trial, calibTrial=False)
                 self.eyeTracker.resetEventQue()
-
+            self.forceFixateRoutine()
+            self.window.flip()
             self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
 
             self.stimulus_off = self.clock.getTime()

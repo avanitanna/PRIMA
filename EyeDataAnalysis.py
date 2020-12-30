@@ -27,7 +27,7 @@ with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb
         items.append(item)
 i = 0
 
-SM = User("SM2", "Study1")
+SM = User("SM", "Study1")
 order = SM.get("TrialOrder")
 eyeData = SM.get("EyeTrackData")
 trials = SM.get("TrialsCompleted")
@@ -37,8 +37,8 @@ while i < trials:
     print(eyeData[i])
     for fixations in eyeData[i]['AllFixations']:
 
-        img = cv2.circle(img, (int(fixations[1]), int(fixations[0])), 3, (255, 0, 0), 2)
+        img = cv2.circle(img, (int(fixations[0]), int(fixations[1])), 3, (255, 0, 0), 2)
     cv2.imshow("asrg", img)
     cv2.waitKey(0)
-
+    cv2.imwrite("img" + str(i) + ".jpeg", img)
     i += 1
