@@ -5,7 +5,7 @@ import constants
 def draw_fixation(window, position=None):
     if position is None:
         position = [0, 0]
-    wait = True
+
     x = position[0]
     y = position[1]
     size = constants.CROSS_SIZE
@@ -19,20 +19,6 @@ def draw_fixation(window, position=None):
 
     fixation.draw()
     guideText.draw()
-    window.flip()
-
-    while wait:
-        keys = event.getKeys()
-        quitExperiment = check_force_exit(keys)
-
-        if constants.EVENT_PROCEED_KEY in keys:
-            wait = False
-        elif quitExperiment:
-            return quitExperiment
-        elif 'c' in event.getKeys():
-            recalibrate = True
-            return recalibrate
-    return False
 
 
 def guide_text(window, trial, conditionID):
@@ -47,9 +33,18 @@ def guide_text(window, trial, conditionID):
     condition.draw()
 
 
-def check_force_exit(keys):
+def draw_gaze(window, position=None):
+    gaze = visual.Circle(window, radius=3, units="pix", pos=position, lineWidth=2,
+                         lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
+    gaze.draw()
 
-    quitExperiment = False
-    if ('escape' in keys) or ('esc' in keys):
-        quitExperiment = True
-    return quitExperiment
+
+def wait_for_user_input():
+    while True:
+        keys = event.getKeys()
+        if constants.EVENT_PROCEED_KEY in keys:
+            return constants.EVENT_PROCEED_KEY
+        elif constants.QUIT_EXPERIMENT_KEY in keys:
+            return constants.QUIT_EXPERIMENT_KEY
+        elif constants.RECALIBRATE_KEY in keys:
+            return constants.RECALIBRATE_KEY
