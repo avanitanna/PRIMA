@@ -5,7 +5,10 @@ import os
 import cv2
 import numpy as np
 
-
+Subjects = {0: "NH",
+            1: "DK",
+            2: "MFP"
+}
 def psychopy_image(path):
     background = np.ones(constants.BACKGROUND_SIZE, np.uint8) * 128
     img = cv2.imread(path)
@@ -27,18 +30,24 @@ with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb
         items.append(item)
 i = 0
 
-SM = User("SM", "Study1")
+SM = User("DK", "Study1")
 order = SM.get("TrialOrder")
 eyeData = SM.get("EyeTrackData")
 trials = SM.get("TrialsCompleted")
-print(eyeData)
+#print(eyeData)
 while i < trials:
     img = psychopy_image(imgsPath[order[i]])
-    print(eyeData[i])
+    #print(eyeData[i])
+    j=0
     for fixations in eyeData[i]['AllFixations']:
-
         img = cv2.circle(img, (int(fixations[0]), int(fixations[1])), 3, (255, 0, 0), 2)
-    cv2.imshow("asrg", img)
-    cv2.waitKey(0)
-    cv2.imwrite("img" + str(i) + ".jpeg", img)
+        if j > 0:
+            img = cv2.line(img, (int(oldfixations[0]), int(oldfixations[1])), (int(fixations[0]), int(fixations[1])), (255, 0, 0), 2)
+        oldfixations = fixations
+        j+=1
+
+
+    #cv2.imshow("asrg", img)
+    #cv2.waitKey(0)
+    cv2.imwrite("Documents/DK/img" + str(i) + ".jpeg", img)
     i += 1

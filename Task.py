@@ -49,13 +49,21 @@ class Task:
         self.window.flip()
         core.wait(constants.STIMULI_DURATION)
         self.window.flip()
+
+        #done = False
+        #while not done:
+         #   keys = event.getKeys()
+          #  if constants.EVENT_PROCEED_KEY in keys:
+           #     done = True
         event.clearEvents()
 
     def save_subject_data(self):
+
         self.subject.update('TrialsCompleted', self.trial)
+
         if self.trackEye:
             self.get_eyeTracker_data()
-            print(self.eyeTrackerData)
+
             self.subject.append('EyeTrackData', self.eyeTrackerData.copy())
 
     def quit_experiment(self):
@@ -65,7 +73,7 @@ class Task:
             if self.eyeTracker.getStatus() != "OFFLINE":
                 self.eyeTracker.closeConnectionToEyeTracker()
 
-        self.task_message("Observer force quit the experiment on trial %d" % self.trial)
+        self.task_message("Observer force quit the experiment on trial %d" % (self.trial + 1))
         self.window.close()
         core.quit()
         event.clearEvents()
@@ -108,12 +116,11 @@ class Task:
                 saccades.append([start_saccade, [row['gstx'], row['gsty'], row['end']]])
                 all_fixations.append([row['gavx'], row['gavy'], row['start'], row['end']])
                 start_saccade = None
-                print("serg")
+
             if row['type'] == "saccade":
                 start_saccade = [row['gstx'], row['gsty'], row['end']]
                 all_saccades.append([[row['gstx'], row['gsty'], row['start']],
                                      [row['genx'], row['geny'], row['end']]])
-                print("sereeg")
 
         self.eyeTrackerData['Saccades'] = saccades
         self.eyeTrackerData['AllSaccades'] = all_saccades
@@ -131,7 +138,7 @@ class Task:
                     self.action[keys[-1]]()
 
             eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
-            #print(eye_data)
+
             if eye_data != (-1, -1):
                 eyePosition = (eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2,
                                -eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2)
@@ -153,10 +160,41 @@ class Task:
                 else:
                     fixationStarted = False
 
+                taskUtils.draw_gaze(self.window, eyePosition)
+
+            taskUtils.guide_text(self.window, self.trial, self.condition)
+            taskUtils.draw_fixation(self.window, [0, -300])
+            self.window.flip()
+
+    def fixation_routine(self):
+        fixating = False
+        fixationDone = False
+        event.clearEvents()
+        while not fixationDone:
+            keys = event.getKeys()
+
+            if constants.EVENT_PROCEED_KEY in keys and fixating:
+                fixationDone = True
+
+            elif len(keys) > 0:
+                if keys[-1] in self.action and constants.EVENT_PROCEED_KEY not in keys:
+                    self.action[keys[-1]]()
+
+            eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
+
+            if eye_data != (-1, -1):
+                eyePosition = (eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2,
+                               -eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2)
+                # switch to psychopy window coordinates (0,0) middle of screen
+
+                gazeOkayRegion = visual.Circle(self.window, radius=constants.CROSS_SIZE / 2,
+                                               units="pix", pos=[0, -300], lineWidth=2,
+                                               lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
+
+                fixating = gazeOkayRegion.contains(*eyePosition)
 
                 taskUtils.draw_gaze(self.window, eyePosition)
 
-                print(eyePosition)
             taskUtils.guide_text(self.window, self.trial, self.condition)
             taskUtils.draw_fixation(self.window, [0, -300])
             self.window.flip()
@@ -166,16 +204,16 @@ class Task:
         for _ in self.trialOrder[n:]:
             self.task_message("Fixation loaded.")
             taskUtils.guide_text(self.window, self.trial, self.condition)
-            #taskUtils.draw_fixation(self.window, [0, -300])
+            # taskUtils.draw_fixation(self.window, [0, -300])
 
-
-            #self.action[taskUtils.wait_for_user_input()]()
+            # self.action[taskUtils.wait_for_user_input()]()
 
             if self.trackEye:
                 if self.eyeTracker.getStatus() != "RECORDING":
-                    self.eyeTracker.startEyeTracking(self.trial, calibTrial=False)
+                    self.eyeTracker.startEyeTracking(self.trial + 1, calibTrial=False)
                 self.eyeTracker.resetEventQue()
-            self.forceFixateRoutine()
+            self.fixation_routine()
+            # self.forceFixateRoutine()
             self.window.flip()
             self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
 

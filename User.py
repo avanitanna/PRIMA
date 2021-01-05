@@ -40,6 +40,7 @@ class User:
             if self.userInfo['Data']['TotalTrials'] is not None:
                 self.userInfo['Data']['TrialOrder'] = np.random.permutation(
                     self.userInfo['Data']['TotalTrials']).tolist()
+                self.save_data()
             else:
                 print("User data does not exist. Please provide the total number of trials in the experiment while "
                       "initiating User class")
@@ -66,9 +67,7 @@ class User:
     def data_recursion(self, field, action, value=None, data=None):
         if data is None:
             data = self.userInfo
-        print("ho")
-        print(data)
-        print("hi")
+
         for key in data:
             if isinstance(data[key], Mapping):
                 if action == constants.GET:
@@ -83,13 +82,9 @@ class User:
                     data[key] = value
                 elif action == constants.APPEND:
                     if not isinstance(data[key], Mapping):
-                        print(data[key])
-                        print(value)
                         data[key].append(value)
-                        print(data[key])
 
                     else:
-                        print("awerfwefawefawefawefawefwaef")
                         for item in value:
                             data[key][item].append(value[item])
 
