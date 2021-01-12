@@ -20,6 +20,9 @@ class User:
         self.dataExists = False
         self.load_data()
 
+        if eyeTracked is not None:
+            self.update("EyeTracked", eyeTracked)
+
     def data_dir(self):
         rootDataDirName = os.path.join(os.getcwd(),
                                        'SubjectData',
