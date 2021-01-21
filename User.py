@@ -9,12 +9,13 @@ class User:
     def __init__(self, participantID, conditionID, eyeTracked=None, TotalTrials=None):
         self.userInfo = {'ParticipantID': participantID,
                          'ConditionID': conditionID,
-                         'EyeTracked': eyeTracked,
+
                          'Data': {'TotalTrials': TotalTrials,
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
                                   'TaskMessages': [],
                                   'EyeTrackData': []},
+                         'EyeTracked': eyeTracked
                          }
         self.userDataPath = None
         self.dataExists = False
@@ -52,43 +53,110 @@ class User:
         with open(self.userDataPath, 'w') as filePath:
             json.dump(self.userInfo, filePath)
 
-    def get(self, field):
-        data = self.data_recursion(field, action=constants.GET)
-        if data is not None:
+    def has(self, field):
+        _, success = self.data_recursion(field, action=constants.GET)
+        return success
+
+    def get(self, field, parentField=None):
+        data = None
+        if parentField is not None:
+            data, success = self.data_recursion(parentField, action=constants.GET)
+            if not success:
+                print("The given parent field does not exist")
+                return None
+
+        data, success = self.data_recursion(field, data=data, action=constants.GET)
+        if success:
             return data
 
         print("The given field does not exist")
+        return None
 
-    def update(self, field, value):
-        self.userInfo = self.data_recursion(field, action=constants.UPDATE, value=value)
-        self.save_data()
+    def update(self, field, value, parentField=None):
+        data = None
+        if parentField is not None:
+            data, success = self.data_recursion(parentField, action=constants.GET)
+            if not success:
+                print("The given parent field does not exist")
+                return
+            data, success = self.data_recursion(field, action=constants.UPDATE, value=value, data=data)
+            if not success:
+                print("The given field does not exist in the parent field")
+                return
+            self.update(parentField, data)
+        else:
+            data, success = self.data_recursion(field, action=constants.UPDATE, value=value)
+            if success:
+                self.userInfo = data
+                self.save_data()
+            else:
+                print("The given field does not exist")
 
-    def append(self, field, value):
-        self.userInfo = self.data_recursion(field, action=constants.APPEND, value=value)
-        self.save_data()
+    def append(self, field, value, parentField=None):
+        data = None
+        if parentField is not None:
+            data, success = self.data_recursion(parentField, action=constants.GET)
+            if not success:
+                print("The given parent field does not exist")
+                return
+            data, success = self.data_recursion(field, action=constants.APPEND, value=value, data=data)
+            if not success:
+                print("The given field does not exist in the parent field")
+                return
+            self.update(parentField, data)
+        else:
+            data, success = self.data_recursion(field, action=constants.APPEND, value=value)
+            if success:
+                self.userInfo = data
+                self.save_data()
+            else:
+                print("The given field does not exist")
+
+    def create(self, field, parentField, value=[]):
+        data, success = self.data_recursion(parentField, action=constants.GET)
+        print(parentField)
+        if not success:
+            print("The given parent field does not exist")
+            return
+        if isinstance(data, Mapping):
+            if field not in data:
+                data[field] = value
+                self.update(parentField, data)
+            else:
+                print("Field already exists in parent field")
+        else:
+            print("Parent field is not a dictionary")
+            return
 
     def data_recursion(self, field, action, value=None, data=None):
+        success = False
         if data is None:
             data = self.userInfo
 
         for key in data:
-            if isinstance(data[key], Mapping):
-                if action == constants.GET:
-                    data = self.data_recursion(field, action, data=data[key])
-                else:
-                    data[key] = self.data_recursion(field, action, value=value, data=data[key])
 
-            elif key == field:
+            if key == field:
+                success = True
                 if action == constants.GET:
-                    return data[key]
+                    return data[key], success
                 elif action == constants.UPDATE:
                     data[key] = value
                 elif action == constants.APPEND:
                     if not isinstance(data[key], Mapping):
                         data[key].append(value)
-
                     else:
                         for item in value:
                             data[key][item].append(value[item])
+                return data, success
 
-        return data
+            elif isinstance(data[key], Mapping):
+                if action == constants.GET:
+                    Data, success = self.data_recursion(field, action, data=data[key])
+                    if success:
+                        return Data, success
+                else:
+                    data[key], success = self.data_recursion(field, action, value=value, data=data[key])
+                    if success:
+                        return data, success
+
+        return data, success

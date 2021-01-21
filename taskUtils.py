@@ -33,6 +33,35 @@ def guide_text(window, trial, conditionID):
     condition.draw()
 
 
+def user_text_input_converter(key, text, modify=None):
+
+    done = False
+    if 'space' in key:
+        text.text = text.text + ' '
+
+    elif 'backspace' in key:
+        text.text = text.text[:-1]
+    elif 'period' in key:
+        text.text = text.text + '.'
+    elif 'comma' in key:
+        text.text = text.text + ','
+    elif 'semicolon' in key:
+        text.text = text.text + ';'
+    elif 'apostrophe' in key:
+        text.text = text.text + "'"
+    elif 'lshift' in key or 'rshift' in key:
+        modify = True
+    elif 'return' in key:
+        done = True
+    elif len(key[0]) == 1:
+        if modify:
+            text.text = text.text + key[0].upper()
+            modify = False
+        else:
+            text.text = text.text + key[0]
+    return text, done, modify
+
+
 def draw_gaze(window, position=None):
     gaze = visual.Circle(window, radius=3, units="pix", pos=position, lineWidth=2,
                          lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
@@ -40,6 +69,7 @@ def draw_gaze(window, position=None):
 
 
 def wait_for_user_input():
+    event.clearEvents()
     while True:
         keys = event.getKeys()
         if constants.EVENT_PROCEED_KEY in keys:

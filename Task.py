@@ -18,6 +18,10 @@ class Task:
         self.condition = self.subject.get("ConditionID")
         self.eyeTracked = self.subject.get("EyeTracked")
         self.window = visual.Window(constants.MONITOR_RESOLUTION, monitor="testMonitor", units="pix")
+        self.guide_text = visual.TextStim(win=self.window, name='guide_text',
+                                          text=None, font='Arial',
+                                          pos=(0, 200), color=constants.COLOR_WHITE,
+                                          colorSpace='rgb255')
         self.trackEye = trackEye
         self.action = {constants.QUIT_EXPERIMENT_KEY: self.quit_experiment,
                        constants.RECALIBRATE_KEY: self.recalibrate,
@@ -50,12 +54,87 @@ class Task:
         core.wait(constants.STIMULI_DURATION)
         self.window.flip()
 
-        #done = False
-        #while not done:
-         #   keys = event.getKeys()
-          #  if constants.EVENT_PROCEED_KEY in keys:
-           #     done = True
+        # done = False
+        # while not done:
+        #   keys = event.getKeys()
+        #  if constants.EVENT_PROCEED_KEY in keys:
+        #     done = True
         event.clearEvents()
+
+    def condition_based_questions(self):
+
+        if self.condition == 'Study2':
+
+            if not self.subject.has("Descriptions"):
+                self.subject.create("Descriptions", "Data", [])
+
+            text = visual.TextStim(win=self.window, name='text',
+                                   text=None,
+                                   font='Arial',
+                                   pos=(0, 0),
+                                   color=constants.COLOR_WHITE, colorSpace='rgb255')
+            done = False
+            modify = False
+            self.guide_text.text = " Enter your description below. Once done, press ENTER"
+            self.guide_text.draw()
+            self.window.flip()
+            while not done:
+                keys = event.getKeys()
+
+                if len(keys):
+                    text, done, modify = taskUtils.user_text_input_converter(keys, text, modify)
+                    text.draw()
+                    self.guide_text.draw()
+                    self.window.flip()
+
+            self.subject.append("Descriptions", text.text)
+
+        elif self.condition == "Study3" or self.condition == "Study4":
+
+            if self.condition == "Study3":
+                data_type = "ObjectLocation"
+                if not self.subject.has(data_type):
+                    self.subject.create("ObjectLocation", "Data", [])
+                self.guide_text.text = "Click on the left or right box to select the object location and press spacebar"
+            else:
+                data_type = "SalientLocation"
+                if not self.subject.has(data_type):
+                    self.subject.create("SalientLocation", "Data", [])
+                self.guide_text.text = "Click on the left or right box to select the most salient location and press " \
+                                  "spacebar "
+            mouse = event.Mouse()
+            leftRectVert = ((-100, 50), (-100, -50), (0, -50), (0, 50))
+            leftRect = visual.ShapeStim(self.window, vertices=leftRectVert, lineWidth=2, lineColor="white")
+
+            rightRectVert = ((0, 50), (0, -50), (100, -50), (100, 50))
+            rightRect = visual.ShapeStim(self.window, vertices=rightRectVert, lineWidth=2, lineColor="white")
+
+            done = False
+            clicked = False
+            clickedSide = ''
+            while not done:
+                if mouse.isPressedIn(shape=leftRect):
+                    leftRect.fillColor = 'green'
+                    rightRect.fillColor = None
+                    clickedSide = constants.LEFT
+                    clicked = True
+
+                elif mouse.isPressedIn(shape=rightRect):
+                    leftRect.fillColor = None
+                    rightRect.fillColor = 'green'
+                    clickedSide = constants.RIGHT
+                    clicked = True
+
+                leftRect.draw()
+                rightRect.draw()
+                self.guide_text.draw()
+                self.window.flip()
+
+                keys = event.getKeys()
+                if constants.EVENT_PROCEED_KEY in keys and clicked:
+                    done = True
+
+            self.subject.append(data_type, clickedSide)
 
     def save_subject_data(self):
 
@@ -103,8 +182,8 @@ class Task:
 
         events = events[(events['start'] > start_stimulus_time) & (events['start'] < end_stimulus_time)]
 
-        events['start'] = self.stimulus_on + ((events['start'] - start_stimulus_time).astype('float64') / 1000)
-        events['end'] = self.stimulus_on + ((events['end'] - start_stimulus_time).astype('float64') / 1000)
+        events['start'] = self.stimulus_off + ((events['start'] - start_stimulus_time).astype('float64') / 1000)
+        events['end'] = self.stimulus_off + ((events['end'] - start_stimulus_time).astype('float64') / 1000)
 
         start_saccade = None
         saccades = []
@@ -204,15 +283,17 @@ class Task:
         for _ in self.trialOrder[n:]:
             self.task_message("Fixation loaded.")
             taskUtils.guide_text(self.window, self.trial, self.condition)
-            # taskUtils.draw_fixation(self.window, [0, -300])
-
-            # self.action[taskUtils.wait_for_user_input()]()
 
             if self.trackEye:
                 if self.eyeTracker.getStatus() != "RECORDING":
                     self.eyeTracker.startEyeTracking(self.trial + 1, calibTrial=False)
                 self.eyeTracker.resetEventQue()
-            self.fixation_routine()
+                self.fixation_routine()
+            else:
+                taskUtils.draw_fixation(self.window, [0, -300])
+                self.window.flip()
+                self.action[taskUtils.wait_for_user_input()]()
+
             # self.forceFixateRoutine()
             self.window.flip()
             self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
@@ -225,7 +306,13 @@ class Task:
             if self.trackEye:
                 self.eyeTracker.stopEyeTracking()
 
+            self.condition_based_questions()
             self.trial += 1
             self.save_subject_data()
 
             self.window.flip()
+
+        self.guide_text.text = "Thank you for participating in the experiment!! :) press space bar to exit"
+        self.guide_text.draw()
+        self.window.flip()
+        taskUtils.wait_for_user_input()

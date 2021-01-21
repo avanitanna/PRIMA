@@ -8,7 +8,9 @@ import numpy as np
 Subjects = {0: "NH",
             1: "DK",
             2: "MFP"
-}
+            }
+
+
 def psychopy_image(path):
     background = np.ones(constants.BACKGROUND_SIZE, np.uint8) * 128
     img = cv2.imread(path)
@@ -30,24 +32,44 @@ with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb
         items.append(item)
 i = 0
 
-SM = User("DK", "Study1")
-order = SM.get("TrialOrder")
-eyeData = SM.get("EyeTrackData")
-trials = SM.get("TrialsCompleted")
-#print(eyeData)
-while i < trials:
-    img = psychopy_image(imgsPath[order[i]])
-    #print(eyeData[i])
-    j=0
-    for fixations in eyeData[i]['AllFixations']:
-        img = cv2.circle(img, (int(fixations[0]), int(fixations[1])), 3, (255, 0, 0), 2)
-        if j > 0:
-            img = cv2.line(img, (int(oldfixations[0]), int(oldfixations[1])), (int(fixations[0]), int(fixations[1])), (255, 0, 0), 2)
-        oldfixations = fixations
-        j+=1
+# print(eyeData)
+while i < 100:
+    img = psychopy_image(imgsPath[i])
+    attentionMap = np.zeros(img.shape[:2])
+    attentionMapSum = np.zeros(img.shape[:2])
+    norm = np.zeros(img.shape[:2])
+    for j in Subjects:
+        subject = User(Subjects[j], "Study1")
+        order = subject.get("TrialOrder")
+        eyeData = subject.get("EyeTrackData")
+        trials = subject.get("TrialsCompleted")
+        idx = order.index(i)
 
+        # print(eyeData[i])
+        j = 0
+        for fixations in eyeData[idx]['AllFixations']:
+            #attentionMap[int(fixations[1]), int(fixations[0])] += 1
+            attentionMapSum += cv2.circle(attentionMap, (int(fixations[0]), int(fixations[1])),
+                                      constants.ATTENTION_SPOT_RADIUS, 1, -1)
+            #cv2.imshow("wrfw", attentionMapSum)
+            #cv2.waitKey(0)
+            # img1 = cv2.circle(img, (int(fixations[0]), int(fixations[1])), 3, (255, 0, 0), 2)
+            # if j > 0:
+            #    img1 = cv2.line(img1, (int(oldfixations[0]), int(oldfixations[1])), (int(fixations[0]), int(fixations[1])),
+            #               (255, 0, 0), 2)
+            # oldfixations = fixations
+            # j += 1
 
-    #cv2.imshow("asrg", img)
+    #print(np.max(attentionMapSum))
+    attentionMap1 = cv2.GaussianBlur(attentionMapSum, (51, 51), sigmaX=5)
+    attentionMap1 = np.array(attentionMap1 / np.max(attentionMap1) * 255, np.uint8)
+    ColorMap = cv2.applyColorMap(attentionMap1, cv2.COLORMAP_JET)
+    alpha = 0.65
+    blend = np.array(alpha * ColorMap + (1 - alpha) * img, np.uint8)
+
+    #cv2.imshow("wrfw", blend)
     #cv2.waitKey(0)
-    cv2.imwrite("Documents/DK/img" + str(i) + ".jpeg", img)
+    cv2.imwrite("results/Attention_Maps/" + str(i) + ".jpeg", blend)
+    print(i)
     i += 1
+

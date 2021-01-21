@@ -16,7 +16,9 @@ def get_participant_info():
     myDlg.addField('Name:')
     myDlg.addText('Experiment Info')
     myDlg.addField('Condition:', choices=["Study1",
-                                          "Study2"])
+                                          "Study2",
+                                          "Study3",
+                                          "Study4"])
     myDlg.addField('Eye Tracked:', choices=["Right",
                                             "Left"])
 
@@ -46,7 +48,7 @@ def print_hi():
     # Create or open subject file
     subject = User(participantID, conditionID, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = Task(subject, data)
+    task = Task(subject, data, trackEye=False)
     # Run the task
     task.run_trials()
 
