@@ -6,16 +6,16 @@ from collections.abc import Mapping
 
 
 class User:
-    def __init__(self, participantID, conditionID, eyeTracked=None, TotalTrials=None):
+    def __init__(self, participantID, conditionID, experimentType='Main', eyeTracked=None, TotalTrials=None):
         self.userInfo = {'ParticipantID': participantID,
                          'ConditionID': conditionID,
-
+                         'EyeTracked': eyeTracked,
+                         'ExperimentType': experimentType,
                          'Data': {'TotalTrials': TotalTrials,
                                   'TrialOrder': [],
                                   'TrialsCompleted': 0,
                                   'TaskMessages': [],
-                                  'EyeTrackData': []},
-                         'EyeTracked': eyeTracked
+                                  'EyeTrackData': []}
                          }
         self.userDataPath = None
         self.dataExists = False
@@ -28,7 +28,8 @@ class User:
         rootDataDirName = os.path.join(os.getcwd(),
                                        'SubjectData',
                                        self.userInfo['ParticipantID'],
-                                       self.userInfo['ConditionID'])
+                                       self.userInfo['ConditionID'],
+                                       self.userInfo['ExperimentType'])
         if not os.path.exists(rootDataDirName):
             os.makedirs(rootDataDirName)
         return rootDataDirName

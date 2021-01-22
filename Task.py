@@ -43,7 +43,7 @@ class Task:
             self.eyeTracker.sendMessage(message)
 
     def load_stimulus(self):
-        taskUtils.guide_text(self.window, self.trial, self.condition)
+        #taskUtils.guide_text(self.window, self.trial, self.condition)
         stimulus = visual.ImageStim(self.window,
                                     image=self.data['ImagePaths'][self.trialOrder[self.trial]],
                                     pos=[constants.IMAGE_X_DISPLACEMENT, constants.IMAGE_Y_DISPLACEMENT])

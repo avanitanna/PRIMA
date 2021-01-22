@@ -19,6 +19,8 @@ def get_participant_info():
                                           "Study2",
                                           "Study3",
                                           "Study4"])
+    myDlg.addField('Experiment Type:', choices=["Main",
+                                                "Practice"])
     myDlg.addField('Eye Tracked:', choices=["Right",
                                             "Left"])
 
@@ -30,23 +32,29 @@ def get_participant_info():
     return ok_data
 
 
-def data_setup():
+def data_setup(experimentType):
     imgsPath = []
     items = []
-    with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb) mode
+    if experimentType == 'Main':
+        fileName = 'eye_track_exp1.jsonl'
+    else:
+        fileName = 'practice.jsonl'
+
+    with open('JSONS/' + fileName, 'rb') as f:  # opening file in binary(rb) mode
         for item in json_lines.reader(f):
             imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
             items.append(item)
+
     return {'CompleteData': items, 'ImagePaths': imgsPath}
 
 
 def print_hi():
-    participantID, conditionID, eyeTracked = get_participant_info()  # opens up GUI to collect User input
+    participantID, conditionID, experimentType, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
-    data = data_setup()
+    data = data_setup(experimentType)
     trials = len(data['ImagePaths'])
     # Create or open subject file
-    subject = User(participantID, conditionID, constants.EYE_TRACKED[eyeTracked], trials)
+    subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
     task = Task(subject, data, trackEye=False)
     # Run the task
