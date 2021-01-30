@@ -61,10 +61,10 @@ class Task:
         #     done = True
         event.clearEvents()
 
-    def condition_based_questions(self):
+    def load_post_stimulus(self):
 
         if self.condition == 'Study2':
-
+            self.guide_text.text = "Find the given object in the scene. Press spacebar to continue"
             if not self.subject.has("Descriptions"):
                 self.subject.create("Descriptions", "Data", [])
 
@@ -306,7 +306,7 @@ class Task:
             if self.trackEye:
                 self.eyeTracker.stopEyeTracking()
 
-            self.condition_based_questions()
+            self.load_post_stimulus()
             self.trial += 1
             self.save_subject_data()
 

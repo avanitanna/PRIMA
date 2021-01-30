@@ -32,15 +32,29 @@ def get_participant_info():
     return ok_data
 
 
-def data_setup(experimentType):
+def data_setup(conditionID, experimentType):
     imgsPath = []
     items = []
     if experimentType == 'Main':
-        fileName = 'eye_track_exp1.jsonl'
-    else:
-        fileName = 'practice.jsonl'
+        mainFileName = 'eye_tracking_experiment.jsonl'
+        if conditionID == "Study1":
+            xtrasFileName = 'freeViewingXtras.jsonl'
+        if conditionID == "Study2":
+            xtrasFileName = 'descriptionXtras.jsonl'
+        if conditionID == "Study3":
+            xtrasFileName = 'objectSearchXtras.jsonl'
+        if conditionID == "Study4":
+            xtrasFileName = 'saliencyFindXtras.jsonl'
 
-    with open('JSONS/' + fileName, 'rb') as f:  # opening file in binary(rb) mode
+        with open('JSONS/' + xtrasFileName, 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                items.append(item)
+
+    else:
+        mainFileName = 'practice.jsonl'
+
+    with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
         for item in json_lines.reader(f):
             imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
             items.append(item)
@@ -51,7 +65,7 @@ def data_setup(experimentType):
 def print_hi():
     participantID, conditionID, experimentType, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
-    data = data_setup(experimentType)
+    data = data_setup(conditionID, experimentType)
     trials = len(data['ImagePaths'])
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
