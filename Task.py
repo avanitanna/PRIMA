@@ -142,15 +142,16 @@ class Task:
                     done = True
 
             self.subject.append(data_type, clickedSide)
+        event.clearEvents()
 
     def save_subject_data(self):
-
-        self.subject.update('TrialsCompleted', self.trial)
 
         if self.trackEye:
             self.get_eyeTracker_data()
 
             self.subject.append('EyeTrackData', self.eyeTrackerData.copy())
+
+        self.subject.update('TrialsCompleted', self.trial)
 
     def quit_experiment(self):
         if self.trackEye:

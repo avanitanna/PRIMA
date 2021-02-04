@@ -46,22 +46,22 @@ def data_setup(conditionID, experimentType):
         if conditionID == "Study4":
             xtrasFileName = 'saliencyFindXtras.jsonl'
 
-        with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
                 items.append(item)
 
-        with open('JSONS/' + xtrasFileName, 'rb') as f:  # opening file in binary(rb) mode
+        with open(os.path.join('JSONS', xtrasFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
                 items.append(item)
 
     else:
         mainFileName = 'practice.jsonl'
 
-        with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
+        with open(os.path.join('JSONS',  mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
                 items.append(item)
 
     return {'CompleteData': items, 'ImagePaths': imgsPath}
@@ -75,7 +75,7 @@ def print_hi():
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = Task(subject, data, trackEye=False)
+    task = Task(subject, data)
     # Run the task
     task.run_trials()
 
