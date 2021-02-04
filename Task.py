@@ -42,6 +42,13 @@ class Task:
         if self.trackEye and self.eyeTracker.getStatus() == "RECORDING":
             self.eyeTracker.sendMessage(message)
 
+    def load_pre_stimulus(self):
+        if self.condition == 'Study3':
+            targetWord = self.data['CompleteData'][self.trialOrder[self.trial]]['ObjectSearchExperiment']['Label']
+            self.guide_text.text = "Search for the following object in the scene: " + targetWord
+            self.guide_text.pos = (0, 300)
+            self.guide_text.draw()
+
     def load_stimulus(self):
         #taskUtils.guide_text(self.window, self.trial, self.condition)
         stimulus = visual.ImageStim(self.window,
@@ -273,7 +280,7 @@ class Task:
                 fixating = gazeOkayRegion.contains(*eyePosition)
 
                 taskUtils.draw_gaze(self.window, eyePosition)
-
+            self.load_pre_stimulus()
             taskUtils.guide_text(self.window, self.trial, self.condition)
             taskUtils.draw_fixation(self.window, [0, -300])
             self.window.flip()
@@ -290,6 +297,7 @@ class Task:
                 self.eyeTracker.resetEventQue()
                 self.fixation_routine()
             else:
+                self.load_pre_stimulus()
                 taskUtils.draw_fixation(self.window, [0, -300])
                 self.window.flip()
                 self.action[taskUtils.wait_for_user_input()]()

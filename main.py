@@ -46,6 +46,11 @@ def data_setup(conditionID, experimentType):
         if conditionID == "Study4":
             xtrasFileName = 'saliencyFindXtras.jsonl'
 
+        with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                items.append(item)
+
         with open('JSONS/' + xtrasFileName, 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
                 imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
@@ -54,10 +59,10 @@ def data_setup(conditionID, experimentType):
     else:
         mainFileName = 'practice.jsonl'
 
-    with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
-        for item in json_lines.reader(f):
-            imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
-            items.append(item)
+        with open('JSONS/' + mainFileName, 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+                items.append(item)
 
     return {'CompleteData': items, 'ImagePaths': imgsPath}
 
