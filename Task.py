@@ -45,7 +45,7 @@ class Task:
     def load_pre_stimulus(self):
         if self.condition == 'Study3':
             targetWord = self.data['CompleteData'][self.trialOrder[self.trial]]['ObjectSearchExperiment']['Label']
-            self.guide_text.text = "Search for the following object in the scene: " + targetWord
+            self.guide_text.text = targetWord
             self.guide_text.pos = (0, 300)
             self.guide_text.draw()
 
