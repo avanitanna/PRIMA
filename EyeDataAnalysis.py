@@ -5,11 +5,20 @@ import os
 import cv2
 import numpy as np
 
-Subjects = {0: "NH",
-            1: "DK",
-            2: "MFP"
-            }
+#Subjects = {0: "NH",
+#            1: "DK",
+#            2: "MFP"
+#            }
 
+Subjects = {0: "PC"}
+
+Condition = {0: "Study1",
+             1: "Study2",
+             2: "Study3",
+             3: "Study4"}
+
+Type = {0: 'Main',
+        1: 'Practice'}
 
 def psychopy_image(path):
     background = np.ones(constants.BACKGROUND_SIZE, np.uint8) * 128
@@ -26,20 +35,26 @@ def psychopy_image(path):
 
 imgsPath = []
 items = []
-with open('JSONS/eye_track_exp1.jsonl', 'rb') as f:  # opening file in binary(rb) mode
+with open(os.path.join('JSONS', 'eye_tracking_experiment.jsonl'), 'rb') as f:  # opening file in binary(rb) mode
     for item in json_lines.reader(f):
-        imgsPath.append(os.path.join('data/EyeTrackingExp1Images', item['img_fn']))
+        imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
+        items.append(item)
+
+with open(os.path.join('JSONS', 'freeViewingXtras.jsonl'), 'rb') as f:  # opening file in binary(rb) mode
+    for item in json_lines.reader(f):
+        imgsPath.append(os.path.join('data\EyeTrackingExp1Images', item['img_fn']))
         items.append(item)
 i = 0
 
 # print(eyeData)
-while i < 100:
+while i < len(items):
+    print(imgsPath[i])
     img = psychopy_image(imgsPath[i])
     attentionMap = np.zeros(img.shape[:2])
     attentionMapSum = np.zeros(img.shape[:2])
     norm = np.zeros(img.shape[:2])
     for j in Subjects:
-        subject = User(Subjects[j], "Study1")
+        subject = User(Subjects[j], Condition[0], Type[0])
         order = subject.get("TrialOrder")
         eyeData = subject.get("EyeTrackData")
         trials = subject.get("TrialsCompleted")
