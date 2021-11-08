@@ -16,9 +16,7 @@ def get_participant_info():
     myDlg.addField('Name:')
     myDlg.addText('Experiment Info')
     myDlg.addField('Condition:', choices=["Study1",
-                                          "Study2",
-                                          "Study3",
-                                          "Study4"])
+                                          "Study2"])
     myDlg.addField('Experiment Type:', choices=["Main",
                                                 "Practice"])
     myDlg.addField('Eye Tracked:', choices=["Right",
@@ -36,25 +34,14 @@ def data_setup(conditionID, experimentType):
     imgsPath = []
     items = []
     if experimentType == 'Main':
-        mainFileName = 'eye_tracking_experiment.jsonl'
-        if conditionID == "Study1":
-            xtrasFileName = 'freeViewingXtras.jsonl'
-        if conditionID == "Study2":
-            xtrasFileName = 'descriptionXtras.jsonl'
-        if conditionID == "Study3":
-            xtrasFileName = 'objectSearchXtras.jsonl'
-        if conditionID == "Study4":
-            xtrasFileName = 'saliencyFindXtras.jsonl'
+        mainFileName = 'ObjectLocChange_fMRI.jsonl'
 
         with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
+                imgsPath.append(os.path.join('data', 'fMRI', item['Baseline']))
+                imgsPath.append(os.path.join('data', 'fMRI', item['ObjectManipulation']))
                 items.append(item)
 
-        with open(os.path.join('JSONS', xtrasFileName), 'rb') as f:  # opening file in binary(rb) mode
-            for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
-                items.append(item)
 
     else:
         mainFileName = 'practice.jsonl'
@@ -75,7 +62,7 @@ def print_hi():
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = Task(subject, data)
+    task = Task(subject, data, trackEye=False)
     # Run the task
     task.run_trials()
 
