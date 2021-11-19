@@ -20,7 +20,8 @@ class primaTask:
         self.trialOrder = self.subject.get("TrialOrder")
         self.condition = self.subject.get("ConditionID")
         self.eyeTracked = self.subject.get("EyeTracked")
-        self.window = visual.Window(constants.MONITOR_RESOLUTION,color=(-1, -1, -1), monitor="testMonitor", units="pix")
+        self.window = visual.Window(constants.MONITOR_RESOLUTION, color=(-1, -1, -1), monitor="testMonitor",
+                                    units="pix")
         self.guide_text = visual.TextStim(win=self.window, name='guide_text',
                                           text=None, font='Arial',
                                           pos=(0, 200), color=constants.COLOR_WHITE,
@@ -75,31 +76,21 @@ class primaTask:
     def load_prima_patch(self, location):
         stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
         H, W, C = stimuli.shape
-        #cv2.drawMarker(stimuli, (int(W/2) + location[0], int(H/2) - location[1] ), (255, 255, 255), 0, 45, 2)
-
-
-        print(stimuli.shape)
-        patch = stimuli[int(H/2) - location[1] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(H/2) - location[1] + int(
-            constants.PRIMAXX_PATCH_SIZE / 2),
-                int(W/2) + location[0] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(W/2) + location[0] + int(
+        patch = stimuli[
+                int(H / 2) - location[1] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(H / 2) - location[1] + int(
+                    constants.PRIMAXX_PATCH_SIZE / 2),
+                int(W / 2) + location[0] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(W / 2) + location[0] + int(
                     constants.PRIMAXX_PATCH_SIZE / 2)]
         self.implant.stim = ImageStimulus(patch)
         percept = self.model.predict_percept(self.implant).data
+        percept = np.repeat(percept, 3, axis=2)
+        percept = cv2.flip(percept, 0)
 
-        #cv2.imshow("eeg", patch)
-        #cv2.imshow("eg",percept)
-        #cv2.waitKey(0)
-        print("wf")
-        print(percept.shape)
-
-        cv2.imwrite("tt.jpeg",percept* 255)
         patch = visual.ImageStim(self.window,
-                         image="tt.jpeg",
-                         pos=[location[0], location[1]])
-        print(patch.size)
-        print(constants.PRIMAXX_PATCH_SIZE)
+                                 image=percept,
+                                 pos=[location[0], location[1]])
         patch.size = np.array([constants.PRIMAXX_PATCH_SIZE, constants.PRIMAXX_PATCH_SIZE])
-        print(patch.size)
+
         patch.draw()
 
     def load_stimulus(self):
@@ -112,17 +103,12 @@ class primaTask:
 
         aspectRatio = stimulus.size[0] / stimulus.size[1]
         stimulus.size = np.array([aspectRatio * constants.IMG_HEIGHT, constants.IMG_HEIGHT])
-        print("Wef")
-        print(stimulus.size)
+
         stimulus.draw()
-        self.load_prima_patch([0,100])
-        print("ERf")
-        #IIm = np.array(self.window._getFrame())
-        #cv2.imshow("temp.jpeg", IIm)
-        #cv2.waitKey(0)
+        self.load_prima_patch([0, 100])
         self.window.flip()
         taskUtils.wait_for_user_input()
-        core.wait(constants.STIMULI_DURATION)
+        #core.wait(constants.STIMULI_DURATION)
         self.window.flip()
 
         # done = False
