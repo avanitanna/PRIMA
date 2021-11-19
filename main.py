@@ -3,7 +3,7 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 from psychopy import gui
-from Task import Task
+from primaTask import primaTask
 from User import User
 import json_lines
 import os
@@ -62,7 +62,7 @@ def print_hi():
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = Task(subject, data, trackEye=False)
+    task = primaTask(subject, data, trackEye=False)
     # Run the task
     task.run_trials()
 
