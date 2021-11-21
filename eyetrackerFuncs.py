@@ -113,9 +113,9 @@ class Tracker_EyeLink():
         if CalibrationSounds:
             pylink.setCalibrationSounds("", "", "")
             pylink.setDriftCorrectSounds("", "off", "off")
-        else:
-            pylink.setCalibrationSounds("off", "off", "off")
-            pylink.setDriftCorrectSounds("off", "off", "off")
+        #else:
+            #pylink.setCalibrationSounds("off", "off", "off")
+            #pylink.setDriftCorrectSounds("off", "off", "off")
 
         # while len(event.getKeys()) == 0:
         #     1
@@ -179,6 +179,7 @@ class Tracker_EyeLink():
         getEYELINK().sendMessage(msg)
         # The following does drift correction at the begin of each trial
         if calibTrial:  # Does drift correction and handles the re-do camera setup situations
+            pylink.closeGraphics()
             pylink.openGraphicsEx(self.genv)
             self.genv.clear_cal_display()
             self.genv.draw_menu_screen()

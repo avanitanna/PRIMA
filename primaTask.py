@@ -9,7 +9,7 @@ import os
 from pulse2percept.stimuli import ImageStimulus
 import pulse2percept as p2p
 import cv2
-
+import time
 
 class primaTask:
     def __init__(self, subject, data, trackEye=True):
@@ -31,6 +31,7 @@ class primaTask:
 
         self.model = p2p.models.ScoreboardModel(xrange=(-2, 2), yrange=(-2, 2), xystep=0.02, rho=10)
         self.model.build()
+        self.stimuli = None
         self.action = {constants.QUIT_EXPERIMENT_KEY: self.quit_experiment,
                        constants.RECALIBRATE_KEY: self.recalibrate,
                        constants.EVENT_PROCEED_KEY: self.proceed}
@@ -74,9 +75,9 @@ class primaTask:
         return background
 
     def load_prima_patch(self, location):
-        stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
-        H, W, C = stimuli.shape
-        patch = stimuli[
+
+        H, W, C = self.stimuli.shape
+        patch = self.stimuli[
                 int(H / 2) - location[1] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(H / 2) - location[1] + int(
                     constants.PRIMAXX_PATCH_SIZE / 2),
                 int(W / 2) + location[0] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(W / 2) + location[0] + int(
@@ -94,8 +95,9 @@ class primaTask:
         patch.draw()
 
     def load_stimulus(self):
-
+        self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
         # self.implant.stim = ImageStimulus(resized)
+        stop = False
         background = np.zeros(constants.BACKGROUND_SIZE, np.uint8)
         stimulus = visual.ImageStim(self.window,
                                     image=self.data['ImagePaths'][self.trialOrder[self.trial]],
@@ -104,11 +106,41 @@ class primaTask:
         aspectRatio = stimulus.size[0] / stimulus.size[1]
         stimulus.size = np.array([aspectRatio * constants.IMG_HEIGHT, constants.IMG_HEIGHT])
 
-        stimulus.draw()
-        self.load_prima_patch([0, 100])
-        self.window.flip()
-        taskUtils.wait_for_user_input()
-        #core.wait(constants.STIMULI_DURATION)
+        #stimulus.draw()
+        eyePosition = [0, 100]
+        flag = 0
+        while not stop:
+            keys = event.getKeys()
+
+            if self.trackEye:
+                eye_event = self.eyeTracker.getNextData()
+
+                if eye_event == constants.FIXATION_START:
+                    eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
+                    if eye_data != (-1, -1):
+                        eyePosition = (int(eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2),
+                                       int(-eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2))
+                        # switch to psychopy window coordinates (0,0) middle of screen
+                        #if flag == 0:
+                        #    gazeOkayRegion = visual.Circle(self.window, radius=constants.CROSS_SIZE / 2,
+                        #                                   units="pix", pos=eyePosition, lineWidth=2,
+                        #                                   lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
+                        s = time.time()
+                        self.load_prima_patch(eyePosition)
+                        sp = time.time()
+                        print(sp-s)
+                        self.window.flip()
+                        #flag = 1
+
+                        #if not gazeOkayRegion.contains(*eyePosition):
+                        #    flag = 0
+
+
+            if len(keys):
+                if constants.EVENT_PROCEED_KEY in keys:
+                    stop = True
+
+
         self.window.flip()
 
         # done = False
@@ -204,13 +236,13 @@ class primaTask:
         self.subject.update('TrialsCompleted', self.trial)
 
     def quit_experiment(self):
+        self.task_message("Observer force quit the experiment on trial %d" % (self.trial + 1))
         if self.trackEye:
             if self.eyeTracker.getStatus() == "RECORDING":
                 self.eyeTracker.stopEyeTracking()
             if self.eyeTracker.getStatus() != "OFFLINE":
                 self.eyeTracker.closeConnectionToEyeTracker()
 
-        self.task_message("Observer force quit the experiment on trial %d" % (self.trial + 1))
         self.window.close()
         core.quit()
         event.clearEvents()
@@ -307,10 +339,11 @@ class primaTask:
         fixating = False
         fixationDone = False
         event.clearEvents()
+        gaze_check = False
         while not fixationDone:
             keys = event.getKeys()
 
-            if constants.EVENT_PROCEED_KEY in keys and fixating:
+            if constants.EVENT_PROCEED_KEY in keys and fixating and not gaze_check:
                 fixationDone = True
 
             elif len(keys) > 0:
@@ -329,8 +362,13 @@ class primaTask:
                                                lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
 
                 fixating = gazeOkayRegion.contains(*eyePosition)
-
-                taskUtils.draw_gaze(self.window, eyePosition)
+                if len(keys) > 0:
+                    if keys[-1] == constants.GAZE_CHECK_KEY:
+                        gaze_check = True
+                    elif keys[-1] == constants.REMOVE_GAZE_CHECK_KEY:
+                        gaze_check = False
+                if gaze_check:
+                    taskUtils.draw_gaze(self.window, eyePosition)
             self.load_pre_stimulus()
             taskUtils.guide_text(self.window, self.trial, self.condition)
             taskUtils.draw_fixation(self.window, [0, -300])
@@ -339,6 +377,7 @@ class primaTask:
     def run_trials(self):
         n = self.trial
         for _ in self.trialOrder[n:]:
+            event.clearEvents()
             self.task_message("Fixation loaded.")
             taskUtils.guide_text(self.window, self.trial, self.condition)
 
@@ -355,19 +394,25 @@ class primaTask:
 
             # self.forceFixateRoutine()
             self.window.flip()
-            self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
 
-            self.stimulus_off = self.clock.getTime()
+
+
             self.load_stimulus()
+            self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
+            self.stimulus_off = self.clock.getTime()
+            core.wait(constants.STIMULI_DURATION)
+            self.window.flip()
             self.stimulus_on = self.clock.getTime()
 
             self.task_message("STIMULUS PRESENTATION ROUTINE ended.")
             if self.trackEye:
                 self.eyeTracker.stopEyeTracking()
 
-            self.load_post_stimulus()
             self.trial += 1
             self.save_subject_data()
+            self.load_post_stimulus()
+
+
 
             self.window.flip()
 

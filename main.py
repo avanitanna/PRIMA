@@ -17,10 +17,12 @@ def get_participant_info():
     myDlg.addText('Experiment Info')
     myDlg.addField('Condition:', choices=["Study1",
                                           "Study2"])
-    myDlg.addField('Experiment Type:', choices=["Main",
-                                                "Practice"])
-    myDlg.addField('Eye Tracked:', choices=["Right",
-                                            "Left"])
+    myDlg.addField('Experiment Type:', choices=["BL",
+                                                "OM",
+                                                "Practice",
+                                                "test"])
+    myDlg.addField('Eye Tracked:', choices=["Left",
+                                            "Right"])
 
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     if myDlg.OK:  # or if ok_data is not None
@@ -33,16 +35,27 @@ def get_participant_info():
 def data_setup(conditionID, experimentType):
     imgsPath = []
     items = []
-    if experimentType == 'Main':
-        mainFileName = 'ObjectLocChange_fMRI.jsonl'
+    if experimentType == 'BL':
+        mainFileName = 'eyeTrackExp_New.jsonl'
 
         with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
                 imgsPath.append(os.path.join('data', 'fMRI', item['Baseline']))
+                items.append(item)
+
+    elif experimentType == 'OM':
+        mainFileName = 'eyeTrackExp_New.jsonl'
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
                 imgsPath.append(os.path.join('data', 'fMRI', item['ObjectManipulation']))
                 items.append(item)
 
-
+    elif experimentType == 'test':
+        mainFileName = 'test.jsonl'
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data', 'test', item['Baseline']))
+                items.append(item)
     else:
         mainFileName = 'practice.jsonl'
 
@@ -62,7 +75,7 @@ def print_hi():
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = primaTask(subject, data, trackEye=False)
+    task = primaTask(subject, data)
     # Run the task
     task.run_trials()
 
