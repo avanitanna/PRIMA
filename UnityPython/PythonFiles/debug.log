@@ -1,0 +1,8 @@
+2021-11-22 04:47:12,518 [PIL.PngImagePlugin] [DEBUG] STREAM b'IHDR' 16 13
+2021-11-22 04:47:12,518 [PIL.PngImagePlugin] [DEBUG] STREAM b'pHYs' 41 9
+2021-11-22 04:47:12,518 [PIL.PngImagePlugin] [DEBUG] STREAM b'IDAT' 62 8192
+2021-11-22 04:47:16,284 [py.warnings] [WARNING] C:\Users\Avani\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.9_qbz5n2kfra8p0\LocalCache\local-packages\Python39\site-packages\pulse2percept\models\beyeler2019.py:81: UserWarning: Nonzero electrode-retina distances do not have any effect on the model output.
+  warnings.warn(msg)
+
+2021-11-22 04:47:16,669 [imageio] [WARNING] Lossy conversion from float64 to uint8. Range [0, 1]. Convert image to uint8 prior to saving to suppress this warning.
+2021-11-22 04:47:16,754 [pulse2percept.percepts.base] [INFO] Created percept_single_landolt_C.png.
