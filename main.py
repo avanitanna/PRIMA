@@ -36,19 +36,17 @@ def data_setup(conditionID, experimentType):
     imgsPath = []
     items = []
     if experimentType == 'BL':
-        mainFileName = 'eyeTrackExp_New.jsonl'
+        mainFileName = 'LandoltLibrary.jsonl'
 
         with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data', 'fMRI', item['Baseline']))
-                items.append(item)
+                paths = []
+                for img in item["img_fn"]:
 
-    elif experimentType == 'OM':
-        mainFileName = 'eyeTrackExp_New.jsonl'
-        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
-            for item in json_lines.reader(f):
-                imgsPath.append(os.path.join('data', 'fMRI', item['ObjectManipulation']))
+                    paths.append(os.path.join('data', 'Landolt_C', img))
                 items.append(item)
+                imgsPath.append(paths)
+
 
     elif experimentType == 'test':
         mainFileName = 'test.jsonl'
@@ -71,11 +69,13 @@ def print_hi():
     participantID, conditionID, experimentType, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
     data = data_setup(conditionID, experimentType)
+    #data = [None]*12
     trials = len(data['ImagePaths'])
+    #trials = len(data)
     # Create or open subject file
     subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
     # Create the task class
-    task = primaTask(subject, data)
+    task = primaTask(subject, data, trackEye=False)
     # Run the task
     task.run_trials()
 

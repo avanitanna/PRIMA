@@ -22,7 +22,7 @@ CONFIDENCE = {8: ['HIGHEST', 'HIGH', 'MEDIUM', 'LOW', 'LOW', 'MEDIUM', 'HIGH', '
 
 # Image props
 IMG_HEIGHT = 700
-IMAGE_Y_DISPLACEMENT = 100  # Psychopy coordinates
+IMAGE_Y_DISPLACEMENT = 0  # Psychopy coordinates
 IMAGE_X_DISPLACEMENT = 0  # Psychopy coordinates
 BACKGROUND_SIZE = (1024, 1280, 3)
 

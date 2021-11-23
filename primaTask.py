@@ -2,7 +2,7 @@ from psychopy import visual, core, event  # import some libraries from PsychoPy
 import numpy as np
 import taskUtils
 import constants
-from pyedfread import edf
+#from pyedfread import edf
 from eyetrackerFuncs import Tracker_EyeLink
 import tempfile
 import os
@@ -10,6 +10,7 @@ from pulse2percept.stimuli import ImageStimulus
 import pulse2percept as p2p
 import cv2
 import time
+import math
 
 class primaTask:
     def __init__(self, subject, data, trackEye=True):
@@ -62,17 +63,30 @@ class primaTask:
         background = np.zeros(constants.BACKGROUND_SIZE, np.uint8)
 
         img = cv2.imread(path)
-        aspectRatio = img.shape[1] / img.shape[0]
-        dim = (int(aspectRatio * constants.IMG_HEIGHT), constants.IMG_HEIGHT)
-        H = constants.IMG_HEIGHT
-        W = dim[0]
+        H,W,C = img.shape
         start = [constants.Psych2CV[0] - int(H / 2), constants.Psych2CV[1] - int(W / 2)]
 
-        resized_img = cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
-
-        background[start[0]:start[0] + H, start[1]:start[1] + W, :] = resized_img
+        background[start[0]:start[0] + H, start[1]:start[1] + W, :] = img
 
         return background
+
+    def landoltimage(self,trialnum):
+        logMAR = 1.2 - trialnum / 10
+        radius_of_ring_deg = ((math.tan(1/12 * math.pi / 180) * 20 / 10 ** (-logMAR) * 304.8) / constants.PIXEL_SIZE) / 2
+
+        Landolt_ring_outer = visual.Circle(win=self.window, name='Landolt_ring_outer',
+                                           fillColor=(1.0, 1.0, 1.0),
+                                           radius=radius_of_ring_deg, ori=0, pos=[0, 0], lineColor=(1.0, 1.0, 1.0),
+                                           autoLog=True)
+        Landolt_ring_inner = visual.Circle(win=self.window, name='Landolt_ring_inner', fillColor=(-1.0, -1.0, -1.0),
+                                           radius=3 / 5 * radius_of_ring_deg, ori=0, pos=[0, 0],
+                                           lineColor=(-1.0, -1.0, -1.0), autoLog=True)
+        Landolt_C = visual.Rect(win=self.window, name='Landolt_C', fillColor=(-1, -1, -1),
+                                lineColor=(-1, -1, -1), ori=0, pos=[-radius_of_ring_deg / 2, 0],
+                                width=1.4 * (radius_of_ring_deg), height=2 / 5 * radius_of_ring_deg, autoLog=True)
+        Landolt_ring_outer.draw()
+        Landolt_ring_inner.draw()
+        Landolt_C.draw()
 
     def load_prima_patch(self, location):
 
@@ -95,19 +109,26 @@ class primaTask:
         patch.draw()
 
     def load_stimulus(self):
-        self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
+        self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]][0])
+        print(self.data['ImagePaths'][self.trialOrder[self.trial]][0])
+        #cv2.imshow("sdef", self.stimuli)
+        #cv2.waitKey(0)
         # self.implant.stim = ImageStimulus(resized)
         stop = False
         background = np.zeros(constants.BACKGROUND_SIZE, np.uint8)
-        stimulus = visual.ImageStim(self.window,
-                                    image=self.data['ImagePaths'][self.trialOrder[self.trial]],
-                                    pos=[constants.IMAGE_X_DISPLACEMENT, constants.IMAGE_Y_DISPLACEMENT])
+        #stimulus = visual.ImageStim(self.window,
+        #                            image=self.data['ImagePaths'][self.trialOrder[self.trial]],
+        #                            pos=[constants.IMAGE_X_DISPLACEMENT, constants.IMAGE_Y_DISPLACEMENT])
 
-        aspectRatio = stimulus.size[0] / stimulus.size[1]
-        stimulus.size = np.array([aspectRatio * constants.IMG_HEIGHT, constants.IMG_HEIGHT])
+        #aspectRatio = stimulus.size[0] / stimulus.size[1]
+        #stimulus.size = np.array([aspectRatio * constants.IMG_HEIGHT, constants.IMG_HEIGHT])
 
         #stimulus.draw()
-        eyePosition = [0, 100]
+        #self.landoltimage(12)
+        eyePosition = [0, 0]
+        self.load_prima_patch(eyePosition)
+        self.window.flip()
+
         flag = 0
         while not stop:
             keys = event.getKeys()
