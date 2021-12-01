@@ -1,13 +1,13 @@
-{"img_fn": ["0_1.2.bmp", "90_1.2.bmp", "180_1.2.bmp", "270_1.2.bmp"], "img_id": "val-0"}
-{"img_fn": ["0_1.1.bmp", "90_1.1.bmp", "180_1.1.bmp", "270_1.1.bmp"], "img_id": "val-1"}
-{"img_fn": ["0_1.0.bmp", "90_1.0.bmp", "180_1.0.bmp", "270_1.0.bmp"], "img_id": "val-2"}
-{"img_fn": ["0_0.9.bmp", "90_0.9.bmp", "180_0.9.bmp", "270_0.9.bmp"], "img_id": "val-3"}
-{"img_fn": ["0_0.8.bmp", "90_0.8.bmp", "180_0.8.bmp", "270_0.8.bmp"], "img_id": "val-4"}
-{"img_fn": ["0_0.7.bmp", "90_0.7.bmp", "180_0.7.bmp", "270_0.7.bmp"], "img_id": "val-5"}
-{"img_fn": ["0_0.6.bmp", "90_0.6.bmp", "180_0.6.bmp", "270_0.6.bmp"], "img_id": "val-6"}
-{"img_fn": ["0_0.5.bmp", "90_0.5.bmp", "180_0.5.bmp", "270_0.5.bmp"], "img_id": "val-7"}
-{"img_fn": ["0_0.4.bmp", "90_0.4.bmp", "180_0.4.bmp", "270_0.4.bmp"], "img_id": "val-8"}
-{"img_fn": ["0_0.3.bmp", "90_0.3.bmp", "180_0.3.bmp", "270_0.3.bmp"], "img_id": "val-9"}
-{"img_fn": ["0_0.2.bmp", "90_0.2.bmp", "180_0.2.bmp", "270_0.2.bmp"], "img_id": "val-10"}
-{"img_fn": ["0_0.1.bmp", "90_0.1.bmp", "180_0.1.bmp", "270_0.1.bmp"], "img_id": "val-11"}
-{"img_fn": ["0_0.0.bmp", "90_0.0.bmp", "180_0.0.bmp", "270_0.0.bmp"], "img_id": "val-12"}
+{"img_id": "val-0", "img_fn": "1.2.bmp"}
+{"img_id": "val-1", "img_fn": "1.1.bmp"}
+{"img_id": "val-2", "img_fn": "1.0.bmp"}
+{"img_id": "val-3", "img_fn": "0.9.bmp"}
+{"img_id": "val-4", "img_fn": "0.8.bmp"}
+{"img_id": "val-5", "img_fn": "0.7.bmp"}
+{"img_id": "val-6", "img_fn": "0.6.bmp"}
+{"img_id": "val-7", "img_fn": "0.5.bmp"}
+{"img_id": "val-8", "img_fn": "0.4.bmp"}
+{"img_id": "val-9", "img_fn": "0.3.bmp"}
+{"img_id": "val-10", "img_fn": "0.2.bmp"}
+{"img_id": "val-11", "img_fn": "0.1.bmp"}
+{"img_id": "val-12", "img_fn": "0.0.bmp"}

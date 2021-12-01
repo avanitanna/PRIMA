@@ -109,7 +109,9 @@ class primaTask:
         patch.draw()
 
     def load_stimulus(self):
-        self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]][0])
+
+
+        self.stimuli = self.stimuli_shown(np.array(self.data['ImagePaths'][self.trialOrder[self.trial]])[0])
         print(self.data['ImagePaths'][self.trialOrder[self.trial]][0])
         #cv2.imshow("sdef", self.stimuli)
         #cv2.waitKey(0)
