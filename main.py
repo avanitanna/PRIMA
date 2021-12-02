@@ -40,12 +40,10 @@ def data_setup(conditionID, experimentType):
 
         with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                paths = []
-                for img in item["img_fn"]:
-
-                    paths.append(os.path.join('data', 'Landolt_C', img))
+                #paths = []
+                imgsPath.append(os.path.join('data', 'Landolt_C_New_1', item['img_fn']))
                 items.append(item)
-                imgsPath.append(paths)
+                #imgsPath.append()
 
 
     elif experimentType == 'test':
@@ -73,7 +71,7 @@ def print_hi():
     trials = len(data['ImagePaths'])
     #trials = len(data)
     # Create or open subject file
-    subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials)
+    subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials, RandomizeTrials=False)
     # Create the task class
     task = primaTask(subject, data, trackEye=False)
     # Run the task

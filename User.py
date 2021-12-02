@@ -6,7 +6,7 @@ from collections.abc import Mapping
 
 
 class User:
-    def __init__(self, participantID, conditionID, experimentType='Main', eyeTracked=None, TotalTrials=None):
+    def __init__(self, participantID, conditionID, experimentType='Main', eyeTracked=None, TotalTrials=None, RandomizeTrials=True):
         self.userInfo = {'ParticipantID': participantID,
                          'ConditionID': conditionID,
                          'EyeTracked': eyeTracked,
@@ -17,6 +17,7 @@ class User:
                                   'TaskMessages': [],
                                   'EyeTrackData': []}
                          }
+        self.randomizeTrials = RandomizeTrials
         self.userDataPath = None
         self.dataExists = False
         self.load_data()
@@ -43,8 +44,11 @@ class User:
             self.dataExists = True
         else:
             if self.userInfo['Data']['TotalTrials'] is not None:
-                self.userInfo['Data']['TrialOrder'] = np.random.permutation(
-                    self.userInfo['Data']['TotalTrials']).tolist()
+                if self.randomizeTrials:
+                    self.userInfo['Data']['TrialOrder'] = np.random.permutation(
+                        self.userInfo['Data']['TotalTrials']).tolist()
+                else:
+                    self.userInfo['Data']['TrialOrder'] = np.arange(self.userInfo['Data']['TotalTrials']).tolist()
                 self.save_data()
             else:
                 print("User data does not exist. Please provide the total number of trials in the experiment while "

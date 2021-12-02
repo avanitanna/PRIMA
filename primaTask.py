@@ -2,7 +2,7 @@ from psychopy import visual, core, event  # import some libraries from PsychoPy
 import numpy as np
 import taskUtils
 import constants
-#from pyedfread import edf
+# from pyedfread import edf
 from eyetrackerFuncs import Tracker_EyeLink
 import tempfile
 import os
@@ -11,6 +11,8 @@ import pulse2percept as p2p
 import cv2
 import time
 import math
+import datetime
+
 
 class primaTask:
     def __init__(self, subject, data, trackEye=True):
@@ -63,16 +65,17 @@ class primaTask:
         background = np.zeros(constants.BACKGROUND_SIZE, np.uint8)
 
         img = cv2.imread(path)
-        H,W,C = img.shape
+        H, W, C = img.shape
         start = [constants.Psych2CV[0] - int(H / 2), constants.Psych2CV[1] - int(W / 2)]
 
         background[start[0]:start[0] + H, start[1]:start[1] + W, :] = img
 
         return background
 
-    def landoltimage(self,trialnum):
+    def landoltimage(self, trialnum):
         logMAR = 1.2 - trialnum / 10
-        radius_of_ring_deg = ((math.tan(1/12 * math.pi / 180) * 20 / 10 ** (-logMAR) * 304.8) / constants.PIXEL_SIZE) / 2
+        radius_of_ring_deg = ((math.tan(1 / 12 * math.pi / 180) * 20 / 10 ** (
+            -logMAR) * 304.8) / constants.PIXEL_SIZE) / 2
 
         Landolt_ring_outer = visual.Circle(win=self.window, name='Landolt_ring_outer',
                                            fillColor=(1.0, 1.0, 1.0),
@@ -96,39 +99,33 @@ class primaTask:
                     constants.PRIMAXX_PATCH_SIZE / 2),
                 int(W / 2) + location[0] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(W / 2) + location[0] + int(
                     constants.PRIMAXX_PATCH_SIZE / 2)]
-        self.implant.stim = ImageStimulus(patch)
-        percept = self.model.predict_percept(self.implant).data
-        percept = np.repeat(percept, 3, axis=2)
-        percept = cv2.flip(percept, 0)
 
-        patch = visual.ImageStim(self.window,
-                                 image=percept,
-                                 pos=[location[0], location[1]])
-        patch.size = np.array([constants.PRIMAXX_PATCH_SIZE, constants.PRIMAXX_PATCH_SIZE])
+        if patch.any():
+            self.implant.stim = ImageStimulus(patch)
+            percept = self.model.predict_percept(self.implant).data
+            percept = np.repeat(percept, 3, axis=2)
+            percept = cv2.flip(percept, 0)
 
-        patch.draw()
+            patch = visual.ImageStim(self.window,
+                                     image=percept,
+                                     pos=[location[0], location[1]])
+            patch.size = np.array([constants.PRIMAXX_PATCH_SIZE, constants.PRIMAXX_PATCH_SIZE])
+
+            patch.draw()
 
     def load_stimulus(self):
 
+        self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
 
-        self.stimuli = self.stimuli_shown(np.array(self.data['ImagePaths'][self.trialOrder[self.trial]])[0])
-        print(self.data['ImagePaths'][self.trialOrder[self.trial]][0])
-        #cv2.imshow("sdef", self.stimuli)
-        #cv2.waitKey(0)
-        # self.implant.stim = ImageStimulus(resized)
         stop = False
-        background = np.zeros(constants.BACKGROUND_SIZE, np.uint8)
-        #stimulus = visual.ImageStim(self.window,
-        #                            image=self.data['ImagePaths'][self.trialOrder[self.trial]],
-        #                            pos=[constants.IMAGE_X_DISPLACEMENT, constants.IMAGE_Y_DISPLACEMENT])
 
-        #aspectRatio = stimulus.size[0] / stimulus.size[1]
-        #stimulus.size = np.array([aspectRatio * constants.IMG_HEIGHT, constants.IMG_HEIGHT])
-
-        #stimulus.draw()
-        #self.landoltimage(12)
         eyePosition = [0, 0]
+        a = datetime.datetime.now()
         self.load_prima_patch(eyePosition)
+        b = datetime.datetime.now()
+        c = b - a
+        print(c.microseconds)
+
         self.window.flip()
 
         flag = 0
@@ -144,25 +141,23 @@ class primaTask:
                         eyePosition = (int(eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2),
                                        int(-eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2))
                         # switch to psychopy window coordinates (0,0) middle of screen
-                        #if flag == 0:
+                        # if flag == 0:
                         #    gazeOkayRegion = visual.Circle(self.window, radius=constants.CROSS_SIZE / 2,
                         #                                   units="pix", pos=eyePosition, lineWidth=2,
                         #                                   lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
-                        s = time.time()
+                        a = datetime.datetime.now()
                         self.load_prima_patch(eyePosition)
-                        sp = time.time()
-                        print(sp-s)
+                        b = datetime.datetime.now()
+                        print(a - b)
                         self.window.flip()
-                        #flag = 1
+                        # flag = 1
 
-                        #if not gazeOkayRegion.contains(*eyePosition):
+                        # if not gazeOkayRegion.contains(*eyePosition):
                         #    flag = 0
-
 
             if len(keys):
                 if constants.EVENT_PROCEED_KEY in keys:
                     stop = True
-
 
         self.window.flip()
 
@@ -418,8 +413,6 @@ class primaTask:
             # self.forceFixateRoutine()
             self.window.flip()
 
-
-
             self.load_stimulus()
             self.task_message("STIMULUS PRESENTATION ROUTINE starting.")
             self.stimulus_off = self.clock.getTime()
@@ -434,8 +427,6 @@ class primaTask:
             self.trial += 1
             self.save_subject_data()
             self.load_post_stimulus()
-
-
 
             self.window.flip()
 
