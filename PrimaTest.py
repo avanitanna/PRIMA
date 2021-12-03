@@ -6,11 +6,11 @@ import cv2
 
 
 #implant = p2p.implants.AlphaAMS()
-implant = p2p.implants.PRIMA40()
+implant = p2p.implants.PRIMA()
 #model = p2p.models.ScoreboardModel(xrange=(-10, 10), yrange=(-10, 10), rho=10, xystep=0.02)
-model = p2p.models.ScoreboardModel(xrange=(-2.5, 2), yrange=(-2, 2), xystep=0.02, rho=10)
+model = p2p.models.ScoreboardModel(xrange=(-3.6, 3.6), yrange=(-3.6, 3.6), xystep=0.02, rho=10)
 model.build()
-img = plt.imread("data/EyeTrackingExp1Images/Image2.jpeg", 0)
+img = plt.imread("data/EyeTrackingExp1Images/Image3.jpeg", 0)
 
 #img = 1-img
 print(np.max(img))

@@ -2,7 +2,7 @@ from psychopy import visual, core, event  # import some libraries from PsychoPy
 import numpy as np
 import taskUtils
 import constants
-# from pyedfread import edf
+from pyedfread import edf
 from eyetrackerFuncs import Tracker_EyeLink
 import tempfile
 import os
@@ -12,6 +12,7 @@ import cv2
 import time
 import math
 import datetime
+import ast
 
 
 class primaTask:
@@ -22,6 +23,7 @@ class primaTask:
         self.trial = self.subject.get("TrialsCompleted")
         self.trialOrder = self.subject.get("TrialOrder")
         self.condition = self.subject.get("ConditionID")
+        self.experimentType = self.subject.get("ExperimentType")
         self.eyeTracked = self.subject.get("EyeTracked")
         self.window = visual.Window(constants.MONITOR_RESOLUTION, color=(-1, -1, -1), monitor="testMonitor",
                                     units="pix")
@@ -31,6 +33,9 @@ class primaTask:
                                           colorSpace='rgb255')
         self.trackEye = trackEye
         self.implant = p2p.implants.PRIMA40()
+        self.imageStimuli = visual.ImageStim(self.window,
+                                             image=None,
+                                             pos=[0, 0])
 
         self.model = p2p.models.ScoreboardModel(xrange=(-2, 2), yrange=(-2, 2), xystep=0.02, rho=10)
         self.model.build()
@@ -101,8 +106,12 @@ class primaTask:
                     constants.PRIMAXX_PATCH_SIZE / 2)]
 
         if patch.any():
+            a = datetime.datetime.now()
             self.implant.stim = ImageStimulus(patch)
             percept = self.model.predict_percept(self.implant).data
+            b = datetime.datetime.now()
+            c = b - a
+            print(c.microseconds)
             percept = np.repeat(percept, 3, axis=2)
             percept = cv2.flip(percept, 0)
 
@@ -113,51 +122,76 @@ class primaTask:
 
             patch.draw()
 
+    def find_closest_patch(self, location):
+        locations = self.data['CompleteData'][self.trialOrder[self.trial]]["Prima"]["Patches"].keys()
+        locations = np.array([ast.literal_eval(locs) for locs in locations])
+        closestLocation = locations[np.argmin(np.sum((locations - location) ** 2, 1)), :]
+        return list(closestLocation)
+
+    def load_precomputed_prima_patch(self, location):
+
+        H, W, C = self.stimuli.shape
+        patch = self.stimuli[
+                int(H / 2) - location[1] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(H / 2) - location[1] + int(
+                    constants.PRIMAXX_PATCH_SIZE / 2),
+                int(W / 2) + location[0] - int(constants.PRIMAXX_PATCH_SIZE / 2): int(W / 2) + location[0] + int(
+                    constants.PRIMAXX_PATCH_SIZE / 2)]
+
+        if patch.any():
+            closestLocation = self.find_closest_patch(location)
+            path = self.data['CompleteData'][self.trialOrder[self.trial]]["Prima"]["Patches"][str(closestLocation)]
+
+            self.imageStimuli.image = path
+            self.imageStimuli.pos = closestLocation
+            self.imageStimuli.draw()
+
     def load_stimulus(self):
-
         self.stimuli = self.stimuli_shown(self.data['ImagePaths'][self.trialOrder[self.trial]])
-
         stop = False
 
         eyePosition = [0, 0]
-        a = datetime.datetime.now()
-        self.load_prima_patch(eyePosition)
-        b = datetime.datetime.now()
-        c = b - a
-        print(c.microseconds)
-
-        self.window.flip()
 
         flag = 0
-        while not stop:
-            keys = event.getKeys()
-
+        if self.experimentType != "BL":
             if self.trackEye:
-                eye_event = self.eyeTracker.getNextData()
+                while not stop:
+                    keys = event.getKeys()
 
-                if eye_event == constants.FIXATION_START:
-                    eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
-                    if eye_data != (-1, -1):
-                        eyePosition = (int(eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2),
-                                       int(-eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2))
-                        # switch to psychopy window coordinates (0,0) middle of screen
-                        # if flag == 0:
-                        #    gazeOkayRegion = visual.Circle(self.window, radius=constants.CROSS_SIZE / 2,
-                        #                                   units="pix", pos=eyePosition, lineWidth=2,
-                        #                                   lineColorSpace="rgb255", lineColor=constants.COLOR_WHITE)
-                        a = datetime.datetime.now()
-                        self.load_prima_patch(eyePosition)
-                        b = datetime.datetime.now()
-                        print(a - b)
-                        self.window.flip()
-                        # flag = 1
+                    eye_event = self.eyeTracker.getNextData()
 
-                        # if not gazeOkayRegion.contains(*eyePosition):
-                        #    flag = 0
+                    if eye_event == constants.FIXATION_START:
+                        eye_data = self.eyeTracker.getNewestSample(self.eyeTracked, (0, 0))
+                        if eye_data != (-1, -1):
+                            eyePosition = (int(eye_data[0] - constants.MONITOR_RESOLUTION[0] / 2),
+                                           int(-eye_data[1] + constants.MONITOR_RESOLUTION[1] / 2))
 
-            if len(keys):
-                if constants.EVENT_PROCEED_KEY in keys:
-                    stop = True
+                            a = datetime.datetime.now()
+                            self.load_precomputed_prima_patch(eyePosition)
+                            b = datetime.datetime.now()
+                            c = b - a
+                            print(c.microseconds)
+                            self.window.flip()
+                            # flag = 1
+
+                            # if not gazeOkayRegion.contains(*eyePosition):
+                            #    flag = 0
+
+                    if len(keys):
+                        if constants.EVENT_PROCEED_KEY in keys:
+                            stop = True
+            else:
+                a = datetime.datetime.now()
+                self.load_precomputed_prima_patch(eyePosition)
+                b = datetime.datetime.now()
+                c = b - a
+                print(c.microseconds)
+                self.window.flip()
+                taskUtils.wait_for_user_input()
+        else:
+            self.imageStimuli.image = self.data['ImagePaths'][self.trialOrder[self.trial]]
+            self.imageStimuli.draw()
+            self.window.flip()
+            taskUtils.wait_for_user_input()
 
         self.window.flip()
 

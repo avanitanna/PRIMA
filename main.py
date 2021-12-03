@@ -15,10 +15,12 @@ def get_participant_info():
     myDlg.addText('Subject info')
     myDlg.addField('Name:')
     myDlg.addText('Experiment Info')
-    myDlg.addField('Condition:', choices=["Study1",
-                                          "Study2"])
+    myDlg.addField('Condition:', choices=["Study1"])
     myDlg.addField('Experiment Type:', choices=["BL",
-                                                "OM",
+                                                "PRIMA40",
+                                                "PRIMA55",
+                                                "PRIMA75",
+                                                "PRIMA100",
                                                 "Practice",
                                                 "test"])
     myDlg.addField('Eye Tracked:', choices=["Left",
@@ -40,11 +42,40 @@ def data_setup(conditionID, experimentType):
 
         with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
-                #paths = []
+                imgsPath.append(os.path.join('data', 'Landolt_C_New_0', item['img_fn']))
+                items.append(item)
+
+    elif experimentType == 'PRIMA40':
+        mainFileName = 'LandoltLibrary_withPrimaPatches_1.jsonl'
+
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
                 imgsPath.append(os.path.join('data', 'Landolt_C_New_1', item['img_fn']))
                 items.append(item)
-                #imgsPath.append()
 
+    elif experimentType == 'PRIMA55':
+        mainFileName = 'LandoltLibrary_withPrimaPatches_2.jsonl'
+
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data', 'Landolt_C_New_2', item['img_fn']))
+                items.append(item)
+
+    elif experimentType == 'PRIMA75':
+        mainFileName = 'LandoltLibrary_withPrimaPatches_3.jsonl'
+
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data', 'Landolt_C_New_3', item['img_fn']))
+                items.append(item)
+
+    elif experimentType == 'PRIMA100':
+        mainFileName = 'LandoltLibrary_withPrimaPatches_4.jsonl'
+
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+            for item in json_lines.reader(f):
+                imgsPath.append(os.path.join('data', 'Landolt_C_New_4', item['img_fn']))
+                items.append(item)
 
     elif experimentType == 'test':
         mainFileName = 'test.jsonl'
@@ -55,7 +86,7 @@ def data_setup(conditionID, experimentType):
     else:
         mainFileName = 'practice.jsonl'
 
-        with open(os.path.join('JSONS',  mainFileName), 'rb') as f:  # opening file in binary(rb) mode
+        with open(os.path.join('JSONS', mainFileName), 'rb') as f:  # opening file in binary(rb) mode
             for item in json_lines.reader(f):
                 imgsPath.append(os.path.join('data', 'EyeTrackingExp1Images', item['img_fn']))
                 items.append(item)
@@ -67,13 +98,14 @@ def print_hi():
     participantID, conditionID, experimentType, eyeTracked = get_participant_info()  # opens up GUI to collect User input
     # Get the Data
     data = data_setup(conditionID, experimentType)
-    #data = [None]*12
+    # data = [None]*12
     trials = len(data['ImagePaths'])
-    #trials = len(data)
+    # trials = len(data)
     # Create or open subject file
-    subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials, RandomizeTrials=False)
+    subject = User(participantID, conditionID, experimentType, constants.EYE_TRACKED[eyeTracked], trials,
+                   RandomizeTrials=False)
     # Create the task class
-    task = primaTask(subject, data, trackEye=False)
+    task = primaTask(subject, data)
     # Run the task
     task.run_trials()
 

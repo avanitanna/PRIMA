@@ -5,13 +5,13 @@ import constants
 import jsonlines
 
 j=1
-dxy = constants.PRIMAXX_PATCH_SIZE
-for k in range(1,5):
+dxy = 0
+for k in range(1):
     items = []
     data = {}
     for trialnum in range(13):
         logMAR = 1.2 - trialnum / 10
-        radius = int(((math.tan(1 / 12 * math.pi / 180) * 6096 / 10 ** (-logMAR)) / constants.PIXEL_SIZE) / 2)
+        radius = int(((math.tan(1 / 12 * math.pi / 180) * constants.OBSERVER_VIEWING_DISTANCE / 10 ** (-logMAR)) / constants.PIXEL_SIZE) / 2)
 
         number_of_Cs = int((round(constants.BACKGROUND_SIZE[0] / (2*radius)) + 1) / 2)
 
@@ -45,7 +45,7 @@ for k in range(1,5):
         cv2.imshow("Back", Background)
         cv2.waitKey(0)
         #print(np.array(data["img_fn"])[order])
-        #cv2.imwrite("data/Landolt_C_New_" + str(k) + "/" + str(logMAR) + ".bmp", Background)
+        cv2.imwrite("data/Landolt_C_New_" + str(k) + "/" + str(logMAR) + ".bmp", Background)
 
         '''
         cv2.imwrite("data/Landolt_C/90_" + str(logMAR) + ".bmp", landolt_C_90)
