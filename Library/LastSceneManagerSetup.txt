@@ -1,0 +1,5 @@
+sceneSetups:
+- path: Assets/Samples/Tobii XR SDK/3.0.1/Getting Started/Example_GettingStarted.unity
+  isLoaded: 1
+  isActive: 1
+  isSubScene: 0
