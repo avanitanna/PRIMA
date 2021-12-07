@@ -91,7 +91,7 @@ namespace ImageStreamServer
 
         void SendThread()
         {
-            var folder = new DirectoryInfo("C:/Users/Apurv/Documents/Unity_Projects/Prima_final/Assets/separate_C_imgs/1.2/");
+            var folder = new DirectoryInfo("C:/Users/BionicVisionVR/Documents/apurv/PRIMA/Assets/percept1.2/");
             var fileNames = folder.GetFiles("*.png");
             var files = new List<FileItem>();
             foreach(var fn in fileNames)
